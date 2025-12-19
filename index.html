@@ -1,422 +1,213 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.4">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一屆媒體中心GA小學堂測驗</title>
+    <!-- React & Tailwind CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    </style>
 </head>
-<body>
-<p class="p1">import React, { useState, useEffect } from 'react';</p>
-<p class="p1">import { initializeApp } from 'firebase/app';</p>
-<p class="p1">import {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>getFirestore,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>collection,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>doc,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>setDoc,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>getDoc,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>onSnapshot,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>addDoc,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>updateDoc,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>query</p>
-<p class="p1">} from 'firebase/firestore';</p>
-<p class="p1">import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';</p>
-<p class="p1">import {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>BarChart3,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>User,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>FileText,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Link as LinkIcon,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>CheckCircle,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>XCircle,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>Send,<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>ClipboardCheck,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>ChevronRight,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>RefreshCw,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>GraduationCap</p>
-<p class="p1">} from 'lucide-react';</p>
-<p class="p2"><br></p>
-<p class="p1">// --- Firebase Configuration ---</p>
-<p class="p1">const firebaseConfig = JSON.parse(__firebase_config);</p>
-<p class="p1">const app = initializeApp(firebaseConfig);</p>
-<p class="p1">const auth = getAuth(app);</p>
-<p class="p1">const db = getFirestore(app);</p>
-<p class="p1">const appId = typeof __app_id !== 'undefined' ? __app_id : 'ga-quiz-2025';</p>
-<p class="p2"><br></p>
-<p class="p1">const QUESTIONS = [</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q1', label: '1. 該篇文章的瀏覽數', placeholder: '例如：1,250' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q2', label: '2. 該篇文章的讀者從哪個渠道進來最多', placeholder: '例如：Organic Search' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q3', label: '3. 該篇文章的平均參與時間是多少', placeholder: '例如：0m 45s' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q4', label: '4. 該篇文章的會員登入數', placeholder: '例如：150' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q5', label: '5. 該篇文章的轉單狀況', placeholder: '例如：5 筆成交' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q6', label: '6. 該篇文章的 UU 活躍使用者是多少', placeholder: '例如：890' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q7', label: '7. 該篇文章的活躍使用者中有多少人登入會員', placeholder: '例如：120' },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{ id: 'q8', label: '8. 該篇文章的登入率是多少', placeholder: '例如：13.5%' },</p>
-<p class="p1">];</p>
-<p class="p2"><br></p>
-<p class="p1">const TOTAL_SCORE = 100;</p>
-<p class="p1">const SCORE_PER_QUESTION = TOTAL_SCORE / QUESTIONS.length;</p>
-<p class="p2"><br></p>
-<p class="p1">export default function App() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [user, setUser] = useState(null);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [view, setView] = useState('landing'); // landing, member, mentor, submitted</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [submissions, setSubmissions] = useState([]);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [loading, setLoading] = useState(true);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [formData, setFormData] = useState({</p>
-<p class="p1"><span class="Apple-converted-space">    </span>name: '',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>articleTitle: '',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>articleUrl: '',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>answers: QUESTIONS.reduce((acc, q) =&gt; ({ ...acc, [q.id]: '' }), {})</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const [currentGrading, setCurrentGrading] = useState(null);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// --- Auth &amp; Sync ---</p>
-<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const initAuth = async () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (typeof __initial_auth_token !== 'undefined' &amp;&amp; __initial_auth_token) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>await signInWithCustomToken(auth, __initial_auth_token);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>await signInAnonymously(auth);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>console.error("Auth error", error);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>initAuth();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribeAuth = onAuthStateChanged(auth, (u) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setUser(u);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribeAuth();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}, []);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>useEffect(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setLoading(true);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const unsubscribe = onSnapshot(q, (snapshot) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const data = snapshot.docs.map(doc =&gt; ({ id: doc.id, ...doc.data() }));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setSubmissions(data.sort((a, b) =&gt; (b.createdAt || 0) - (a.createdAt || 0)));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}, (err) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>console.error("Firestore error", err);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return () =&gt; unsubscribe();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}, [user]);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// --- Handlers ---</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const handleInputChange = (e, qId) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (qId) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setFormData(prev =&gt; ({</p>
-<p class="p1"><span class="Apple-converted-space">        </span>...prev,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>answers: { ...prev.answers, [qId]: e.target.value }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setFormData(prev =&gt; ({ ...prev, [e.target.name]: e.target.value }));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const submitQuiz = async () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!formData.name || !formData.articleTitle || !formData.articleUrl) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>alert('請填寫完整個人及文章資訊');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>setLoading(true);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const submissionRef = collection(db, 'artifacts', appId, 'public', 'data', 'submissions');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>await addDoc(submissionRef, {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>...formData,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>status: 'pending',<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>grades: QUESTIONS.reduce((acc, q) =&gt; ({ ...acc, [q.id]: null }), {}),</p>
-<p class="p1"><span class="Apple-converted-space">        </span>score: 0,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>createdAt: Date.now(),</p>
-<p class="p1"><span class="Apple-converted-space">        </span>userId: user.uid</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setView('submitted');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>console.error("Submit error", error);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setLoading(false);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>const updateGrade = async (submissionId, qId, isCorrect) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!user) return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const sub = submissions.find(s =&gt; s.id === submissionId);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (!sub) return;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newGrades = { ...sub.grades, [qId]: isCorrect };</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const correctCount = Object.values(newGrades).filter(v =&gt; v === true).length;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const newScore = correctCount * SCORE_PER_QUESTION;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'submissions', submissionId);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>await updateDoc(docRef, {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>grades: newGrades,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>score: Math.round(newScore),</p>
-<p class="p1"><span class="Apple-converted-space">        </span>status: 'graded'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (currentGrading &amp;&amp; currentGrading.id === submissionId) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setCurrentGrading(prev =&gt; ({</p>
-<p class="p1"><span class="Apple-converted-space">          </span>...prev,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>grades: newGrades,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>score: Math.round(newScore),</p>
-<p class="p1"><span class="Apple-converted-space">          </span>status: 'graded'</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>console.error("Grade update error", error);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// --- Views ---</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (view === 'landing') {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-pink-50/30 flex flex-col items-center justify-center p-6 font-sans"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-pink-100"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="w-20 h-20 bg-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-pink-600"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;GraduationCap size={40} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;h1 className="text-2xl font-bold text-slate-800 mb-2"&gt;第一屆媒體中心&lt;br/&gt;GA小學堂測驗&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="text-slate-500 mb-8 leading-relaxed"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>數據力就是您的競爭力！&lt;br/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>分析區間：2025/06/01 - 2025/12/01</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="space-y-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>onClick={() =&gt; setView('member')}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>className="w-full py-4 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-pink-200 flex items-center justify-center gap-2"</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;User size={20} /&gt; 我是組員 (填寫測驗)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>onClick={() =&gt; setView('mentor')}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>className="w-full py-4 bg-white border-2 border-pink-200 hover:border-pink-600 hover:text-pink-600 text-slate-600 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;ClipboardCheck size={20} /&gt; 我是導師 (評分結算)</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (view === 'member') {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-pink-50/20 p-4 md:p-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-sm border border-pink-100 overflow-hidden"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="bg-pink-600 p-8 text-white"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={() =&gt; setView('landing')} className="text-pink-100 text-sm mb-4 hover:text-white transition-colors flex items-center gap-1"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">               </span>← 返回首頁</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 className="text-2xl font-bold"&gt;第一屆 GA 小學堂 - 提交頁面&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;p className="opacity-90 mt-2 text-pink-50"&gt;請從 Google Analytics 找出指定區間的關鍵數據&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">          </span></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="p-8 space-y-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-1 gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="space-y-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="text-sm font-semibold text-slate-700 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;User size={16} className="text-pink-500" /&gt; 參賽者姓名</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>type="text" name="name" value={formData.name} onChange={handleInputChange}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="請輸入您的真實姓名"</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full p-3 bg-slate-50 border border-pink-100 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="space-y-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="text-sm font-semibold text-slate-700 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;FileText size={16} className="text-pink-500" /&gt; 文章標題</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>type="text" name="articleTitle" value={formData.articleTitle} onChange={handleInputChange}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="請輸入參賽文章的完整名稱"</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full p-3 bg-slate-50 border border-pink-100 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div className="space-y-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;label className="text-sm font-semibold text-slate-700 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;LinkIcon size={16} className="text-pink-500" /&gt; 文章網址</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>type="url" name="articleUrl" value={formData.articleUrl} onChange={handleInputChange}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>placeholder="https://..."</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>className="w-full p-3 bg-slate-50 border border-pink-100 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition-all"</p>
-<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;hr className="border-pink-50 my-4" /&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="space-y-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{QUESTIONS.map(q =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div key={q.id} className="space-y-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;label className="text-sm font-semibold text-slate-800"&gt;{q.label}&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;input<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>type="text"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>value={formData.answers[q.id]}<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; handleInputChange(e, q.id)}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>placeholder={q.placeholder}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className="w-full p-3 border border-pink-100 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none"</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>))}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">              </span>onClick={submitQuiz}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>disabled={loading}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>className="w-full py-4 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-pink-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{loading ? &lt;RefreshCw className="animate-spin" /&gt; : &lt;Send size={20} /&gt;}</p>
-<p class="p1"><span class="Apple-converted-space">              </span>確認提交</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (view === 'submitted') {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-pink-50 flex items-center justify-center p-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="max-w-md w-full bg-white rounded-3xl p-8 text-center shadow-lg border border-pink-100"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="w-16 h-16 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;CheckCircle size={32} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;h2 className="text-2xl font-bold text-slate-800"&gt;提交成功！&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;p className="text-slate-500 mt-2 mb-8"&gt;導師將針對數據準確性進行評分，&lt;br/&gt;請靜候佳音。&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">            </span>onClick={() =&gt; setView('landing')}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>className="px-8 py-3 bg-pink-50 text-pink-700 rounded-xl font-medium hover:bg-pink-100 transition-all"</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>回首頁</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (view === 'mentor') {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return (</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div className="min-h-screen bg-pink-50/20 p-4 md:p-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div className="max-w-6xl mx-auto"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="flex items-center justify-between mb-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;h2 className="text-2xl font-bold text-slate-800 underline decoration-pink-500 decoration-4"&gt;導師評分面板&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;p className="text-slate-500 mt-1"&gt;第一屆媒體中心 GA 小學堂&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;button onClick={() =&gt; setView('landing')} className="px-4 py-2 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition-all font-medium"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>返回首頁</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div className="grid grid-cols-1 md:grid-cols-3 gap-6"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>{/* List */}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="md:col-span-1 space-y-3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;h3 className="font-semibold text-slate-700 mb-2 flex items-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;User size={18} className="text-pink-500" /&gt; 提交名單 ({submissions.length})</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{loading ? (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="p-4 text-center text-pink-400 flex items-center justify-center gap-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;RefreshCw className="animate-spin" size={16} /&gt; 載入中...</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>) : submissions.length === 0 ? (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="bg-white p-8 rounded-2xl border border-dashed border-pink-200 text-center text-slate-400"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>尚無人提交</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>) : (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>submissions.map(sub =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>key={sub.id}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>onClick={() =&gt; setCurrentGrading(sub)}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>className={`w-full text-left p-4 rounded-2xl border transition-all ${currentGrading?.id === sub.id ? 'bg-pink-50 border-pink-300 ring-2 ring-pink-500/10' : 'bg-white border-pink-100 hover:border-pink-300'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex justify-between items-start mb-1"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;span className="font-bold text-slate-800"&gt;{sub.name}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;span className={`text-xs px-2 py-1 rounded-full font-bold ${sub.status === 'graded' ? 'bg-pink-600 text-white' : 'bg-pink-100 text-pink-700'}`}&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>{sub.status === 'graded' ? `${sub.score} 分` : '待評分'}</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;p className="text-xs text-slate-500 truncate"&gt;{sub.articleTitle}&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>))</p>
-<p class="p1"><span class="Apple-converted-space">              </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>{/* Grading Area */}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div className="md:col-span-2"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>{currentGrading ? (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="bg-white rounded-3xl border border-pink-100 shadow-xl overflow-hidden sticky top-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="bg-pink-600 p-6 text-white"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="flex justify-between items-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h3 className="text-lg font-bold"&gt;{currentGrading.name} 的作答詳情&lt;/h3&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p className="text-pink-100 text-xs"&gt;作答時間：{new Date(currentGrading.createdAt).toLocaleString()}&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="text-right"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="text-xs opacity-70"&gt;當前總成績&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="text-3xl font-mono font-bold"&gt;{currentGrading.score}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                  </span></p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-pink-50/50 p-4 rounded-xl space-y-2 border border-pink-100"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex gap-2 text-sm"&gt;&lt;span className="text-slate-400 w-16 shrink-0"&gt;文章：&lt;/span&gt;&lt;span className="font-medium text-slate-700"&gt;{currentGrading.articleTitle}&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>&lt;div className="flex gap-2 text-sm"&gt;&lt;span className="text-slate-400 w-16 shrink-0"&gt;網址：&lt;/span&gt;&lt;a href={currentGrading.articleUrl} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:underline break-all"&gt;{currentGrading.articleUrl}&lt;/a&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="space-y-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>{QUESTIONS.map(q =&gt; (</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div key={q.id} className="p-4 border border-slate-100 rounded-2xl hover:bg-pink-50/30 transition-colors"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;div className="text-sm font-semibold text-pink-500 mb-2"&gt;{q.label}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;div className="flex items-center justify-between gap-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="text-lg text-slate-800 font-medium"&gt;{currentGrading.answers[q.id] || '(未填寫)'}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="flex gap-2 shrink-0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                                </span>onClick={() =&gt; updateGrade(currentGrading.id, q.id, true)}</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>className={`p-2 rounded-lg border transition-all ${currentGrading.grades?.[q.id] === true ? 'bg-pink-600 border-pink-600 text-white shadow-md' : 'bg-white border-pink-200 text-pink-300 hover:border-pink-500 hover:text-pink-500'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;CheckCircle size={20} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;button<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                                </span>onClick={() =&gt; updateGrade(currentGrading.id, q.id, false)}</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>className={`p-2 rounded-lg border transition-all ${currentGrading.grades?.[q.id] === false ? 'bg-slate-800 border-slate-800 text-white shadow-md' : 'bg-white border-pink-200 text-pink-300 hover:border-slate-400 hover:text-slate-500'}`}</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                                </span>&lt;XCircle size={20} /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                              </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                      </span>))}</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div className="p-4 bg-pink-50 text-center text-xs text-pink-400 italic"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>點擊按鈕即可自動儲存評分並即時同步組員分數。</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>) : (</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-white rounded-3xl border-2 border-dashed border-pink-200 p-12 text-pink-300"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;BarChart3 size={48} className="mb-4 opacity-20" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;p className="font-medium"&gt;請從左側名單選擇一位組員進行評分&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>)}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>return null;</p>
-<p class="p1">}</p>
+<body class="bg-pink-50/30">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 重要：請在此處手動填入您的 Firebase 設定 ---
+        // 如果您沒有設定，程式將無法儲存數據
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // 初始化 Firebase (Compat 版)
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const appId = 'ga-quiz-2025';
+
+        const QUESTIONS = [
+            { id: 'q1', label: '1. 該篇文章的瀏覽數', placeholder: '例如：1,250' },
+            { id: 'q2', label: '2. 該篇文章的讀者從哪個渠道進來最多', placeholder: '例如：Organic Search' },
+            { id: 'q3', label: '3. 該篇文章的平均參與時間是多少', placeholder: '例如：0m 45s' },
+            { id: 'q4', label: '4. 該篇文章的會員登入數', placeholder: '例如：150' },
+            { id: 'q5', label: '5. 該篇文章的轉單狀況', placeholder: '例如：5 筆成交' },
+            { id: 'q6', label: '6. 該篇文章的 UU 活躍使用者是多少', placeholder: '例如：890' },
+            { id: 'q7', label: '7. 該篇文章的活躍使用者中有多少人登入會員', placeholder: '例如：120' },
+            { id: 'q8', label: '8. 該篇文章的登入率是多少', placeholder: '例如：13.5%' },
+        ];
+
+        const TOTAL_SCORE = 100;
+        const SCORE_PER_QUESTION = TOTAL_SCORE / QUESTIONS.length;
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [view, setView] = useState('landing');
+            const [submissions, setSubmissions] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [formData, setFormData] = useState({
+                name: '', articleTitle: '', articleUrl: '',
+                answers: QUESTIONS.reduce((acc, q) => ({ ...acc, [q.id]: '' }), {})
+            });
+            const [currentGrading, setCurrentGrading] = useState(null);
+
+            useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged((u) => {
+                    if (!u) {
+                        auth.signInAnonymously();
+                    } else {
+                        setUser(u);
+                    }
+                });
+                return () => unsubscribe();
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+                const unsubscribe = db.collection('submissions')
+                    .onSnapshot((snapshot) => {
+                        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setSubmissions(data.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+                        setLoading(false);
+                    });
+                return () => unsubscribe();
+            }, [user]);
+
+            const handleInputChange = (e, qId) => {
+                if (qId) {
+                    setFormData(prev => ({ ...prev, answers: { ...prev.answers, [qId]: e.target.value } }));
+                } else {
+                    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+                }
+            };
+
+            const submitQuiz = async () => {
+                if (!formData.name || !formData.articleTitle) return alert('請填寫姓名與標題');
+                setLoading(true);
+                await db.collection('submissions').add({
+                    ...formData,
+                    status: 'pending',
+                    grades: {},
+                    score: 0,
+                    createdAt: Date.now(),
+                    userId: user.uid
+                });
+                setLoading(false);
+                setView('submitted');
+            };
+
+            const updateGrade = async (id, qId, isCorrect) => {
+                const sub = submissions.find(s => s.id === id);
+                const newGrades = { ...sub.grades, [qId]: isCorrect };
+                const score = Object.values(newGrades).filter(v => v === true).length * SCORE_PER_QUESTION;
+                await db.collection('submissions').doc(id).update({
+                    grades: newGrades,
+                    score: Math.round(score),
+                    status: 'graded'
+                });
+            };
+
+            // 渲染邏輯 (簡化版 UI 以適應單一 HTML)
+            return (
+                <div className="min-h-screen p-4">
+                    {view === 'landing' && (
+                        <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-3xl shadow-xl border border-pink-100 text-center">
+                            <div className="text-pink-600 mb-4 flex justify-center"><i data-lucide="graduation-cap" className="w-12 h-12"></i></div>
+                            <h1 className="text-2xl font-bold mb-6">第一屆媒體中心<br/>GA小學堂測驗</h1>
+                            <button onClick={() => setView('member')} className="w-full py-3 bg-pink-600 text-white rounded-xl mb-4 font-bold">我是組員 (填寫)</button>
+                            <button onClick={() => setView('mentor')} className="w-full py-3 border border-pink-200 text-pink-600 rounded-xl font-bold">我是導師 (評分)</button>
+                        </div>
+                    )}
+
+                    {view === 'member' && (
+                        <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden border border-pink-100">
+                            <div className="bg-pink-600 p-6 text-white flex justify-between">
+                                <h2 className="text-xl font-bold">填寫測驗</h2>
+                                <button onClick={() => setView('landing')}>返回</button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <input type="text" name="name" placeholder="姓名" onChange={handleInputChange} className="w-full p-3 border rounded-xl" />
+                                <input type="text" name="articleTitle" placeholder="文章標題" onChange={handleInputChange} className="w-full p-3 border rounded-xl" />
+                                <input type="text" name="articleUrl" placeholder="文章網址" onChange={handleInputChange} className="w-full p-3 border rounded-xl" />
+                                {QUESTIONS.map(q => (
+                                    <div key={q.id}>
+                                        <label className="text-sm font-bold block mb-1">{q.label}</label>
+                                        <input type="text" placeholder={q.placeholder} onChange={(e) => handleInputChange(e, q.id)} className="w-full p-3 border rounded-xl" />
+                                    </div>
+                                ))}
+                                <button onClick={submitQuiz} className="w-full py-4 bg-pink-600 text-white rounded-xl font-bold">送出答案</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'mentor' && (
+                        <div className="max-w-4xl mx-auto">
+                            <h2 className="text-2xl font-bold mb-6 text-pink-700">導師評分面板</h2>
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    {submissions.map(s => (
+                                        <div key={s.id} onClick={() => setCurrentGrading(s)} className="p-4 bg-white rounded-xl shadow-sm cursor-pointer border hover:border-pink-500">
+                                            <div className="font-bold">{s.name}</div>
+                                            <div className="text-xs text-slate-400">得分: {s.score}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="md:col-span-2">
+                                    {currentGrading ? (
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg">
+                                            <h3 className="font-bold mb-4 border-b pb-2">{currentGrading.name} 的答案</h3>
+                                            {QUESTIONS.map(q => (
+                                                <div key={q.id} className="mb-4 flex justify-between items-center">
+                                                    <div>
+                                                        <div className="text-xs text-pink-500">{q.label}</div>
+                                                        <div className="font-medium">{currentGrading.answers[q.id]}</div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => updateGrade(currentGrading.id, q.id, true)} className={`p-1 rounded ${currentGrading.grades[q.id] === true ? 'bg-green-500 text-white' : 'bg-slate-100'}`}>✔</button>
+                                                        <button onClick={() => updateGrade(currentGrading.id, q.id, false)} className={`p-1 rounded ${currentGrading.grades[q.id] === false ? 'bg-red-500 text-white' : 'bg-slate-100'}`}>✘</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : <div className="text-center text-slate-400 mt-20">請選擇組員</div>}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'submitted' && (
+                        <div className="text-center mt-20">
+                            <h2 className="text-3xl font-bold text-pink-600">提交成功！</h2>
+                            <button onClick={() => setView('landing')} className="mt-4 text-slate-500 underline">返回</button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+        
+        // 初始化圖示
+        setTimeout(() => lucide.createIcons(), 500);
+    </script>
 </body>
 </html>
